@@ -507,7 +507,6 @@ InitializeExceptionStackSwitchHandlers (
 
   MpInitLibWhoAmI (&Index);
   SwitchStackData = (EXCEPTION_STACK_SWITCH_CONTEXT *)Buffer;
-
   //
   // This function may be called twice for each Cpu. Only run InitializeSeparateExceptionStacks
   // if this is the first call or the first call failed because of size too small.
@@ -600,7 +599,6 @@ InitializeMpExceptionStackSwitchHandlers (
       ASSERT (SwitchStackData[Index].Status == EFI_SUCCESS);
     }
   }
-
   FreePages (SwitchStackData, EFI_SIZE_TO_PAGES (NumberOfProcessors * sizeof (EXCEPTION_STACK_SWITCH_CONTEXT)));
 }
 
