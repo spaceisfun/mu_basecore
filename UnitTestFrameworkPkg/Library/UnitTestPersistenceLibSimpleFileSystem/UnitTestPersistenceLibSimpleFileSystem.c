@@ -20,9 +20,10 @@
 #include <UnitTestFrameworkTypes.h>
 
 #define CACHE_FILE_SUFFIX  L"_Cache.dat"
+// MU_CHANGE Starts: Repurposed this function to return file name and path instead of device path
 
 /**
-  Generate the device path to the cache file.
+  Generate the file name and path to the cache file.
 
   @param[in]  FrameworkHandle  A pointer to the framework that is being persisted.
 
@@ -31,8 +32,9 @@
 
 **/
 STATIC
-EFI_DEVICE_PATH_PROTOCOL *
-GetCacheFileDevicePath (
+CHAR16 *
+GetCacheFileName (
+  // MU_CHANGE Ends
   IN UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle
   )
 {
@@ -148,15 +150,18 @@ Exit:
     FreePool (AppPath);
   }
 
-  if (CacheFilePath != NULL) {
-    FreePool (CacheFilePath);
+  // MU_CHANGE Starts: Return file name and path instead of device path
+  if (CacheFileDevicePath != NULL) {
+    FreePool (CacheFileDevicePath);
   }
+  // MU_CHANGE Ends
 
   if (TestName != NULL) {
     FreePool (TestName);
   }
 
-  return CacheFileDevicePath;
+  // MU_CHANGE: Return file name and path
+  return CacheFilePath;
 }
 
 /**
@@ -175,21 +180,23 @@ DoesCacheExist (
   IN UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle
   )
 {
-  EFI_DEVICE_PATH_PROTOCOL  *FileDevicePath;
-  EFI_STATUS                Status;
-  SHELL_FILE_HANDLE         FileHandle;
+  CHAR16             *FileName; // MU_CHANGE: Use file name and path instead of device path
+  EFI_STATUS         Status;
+  SHELL_FILE_HANDLE  FileHandle;
 
   //
   // NOTE: This devpath is allocated and must be freed.
   //
-  FileDevicePath = GetCacheFileDevicePath (FrameworkHandle);
+  // MU_CHANGE: Use file name and path instead of device path
+  FileName = GetCacheFileName (FrameworkHandle);
 
   //
   // Check to see whether the file exists.  If the file can be opened for
   // reading, it exists.  Otherwise, probably not.
   //
-  Status = ShellOpenFileByDevicePath (
-             &FileDevicePath,
+  // MU_CHANGE: Use file name and path instead of device path
+  Status = ShellOpenFileByName (
+             FileName,
              &FileHandle,
              EFI_FILE_MODE_READ,
              0
@@ -198,8 +205,9 @@ DoesCacheExist (
     ShellCloseFile (&FileHandle);
   }
 
-  if (FileDevicePath != NULL) {
-    FreePool (FileDevicePath);
+  // MU_CHANGE: Use file name and path instead of device path
+  if (FileName != NULL) {
+    FreePool (FileName);
   }
 
   DEBUG ((DEBUG_VERBOSE, "%a - Returning %d\n", __FUNCTION__, !EFI_ERROR (Status)));
@@ -229,10 +237,10 @@ SaveUnitTestCache (
   IN UINTN                       SaveStateSize
   )
 {
-  EFI_DEVICE_PATH_PROTOCOL  *FileDevicePath;
-  EFI_STATUS                Status;
-  SHELL_FILE_HANDLE         FileHandle;
-  UINTN                     WriteCount;
+  CHAR16             *FileName; // MU_CHANGE: Use file name and path instead of device path
+  EFI_STATUS         Status;
+  SHELL_FILE_HANDLE  FileHandle;
+  UINTN              WriteCount;
 
   //
   // Check the inputs for sanity.
@@ -245,13 +253,15 @@ SaveUnitTestCache (
   // Determine the path for the cache file.
   // NOTE: This devpath is allocated and must be freed.
   //
-  FileDevicePath = GetCacheFileDevicePath (FrameworkHandle);
+  // MU_CHANGE: Use file name and path instead of device path
+  FileName = GetCacheFileName (FrameworkHandle);
 
   //
   // First lets open the file if it exists so we can delete it...This is the work around for truncation
   //
-  Status = ShellOpenFileByDevicePath (
-             &FileDevicePath,
+  // MU_CHANGE: Use file name and path instead of device path
+  Status = ShellOpenFileByName (
+             FileName,
              &FileHandle,
              (EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE),
              0
@@ -270,8 +280,9 @@ SaveUnitTestCache (
   //
   // Now that we know the path to the file... let's open it for writing.
   //
-  Status = ShellOpenFileByDevicePath (
-             &FileDevicePath,
+  // MU_CHANGE: Use file name and path instead of device path
+  Status = ShellOpenFileByName (
+             FileName,
              &FileHandle,
              (EFI_FILE_MODE_READ | EFI_FILE_MODE_WRITE | EFI_FILE_MODE_CREATE),
              0
@@ -304,8 +315,9 @@ SaveUnitTestCache (
   ShellCloseFile (&FileHandle);
 
 Exit:
-  if (FileDevicePath != NULL) {
-    FreePool (FileDevicePath);
+  // MU_CHANGE: Use file name and path instead of device path
+  if (FileName != NULL) {
+    FreePool (FileName);
   }
 
   return Status;
@@ -334,13 +346,13 @@ LoadUnitTestCache (
   OUT UINTN                       *SaveStateSize
   )
 {
-  EFI_STATUS                Status;
-  EFI_DEVICE_PATH_PROTOCOL  *FileDevicePath;
-  SHELL_FILE_HANDLE         FileHandle;
-  BOOLEAN                   IsFileOpened;
-  UINT64                    LargeFileSize;
-  UINTN                     FileSize;
-  VOID                      *Buffer;
+  EFI_STATUS             Status;
+  CHAR16                 *FileName; // MU_CHANGE: Use file name and path instead of device path
+  SHELL_FILE_HANDLE      FileHandle;
+  BOOLEAN                IsFileOpened;
+  UINT64                 LargeFileSize;
+  UINTN                  FileSize;
+  VOID                    *Buffer;
 
   IsFileOpened = FALSE;
   Buffer       = NULL;
@@ -356,13 +368,15 @@ LoadUnitTestCache (
   // Determine the path for the cache file.
   // NOTE: This devpath is allocated and must be freed.
   //
-  FileDevicePath = GetCacheFileDevicePath (FrameworkHandle);
+  // MU_CHANGE: Use file name and path instead of device path
+  FileName = GetCacheFileName (FrameworkHandle);
 
   //
   // Now that we know the path to the file... let's open it for writing.
   //
-  Status = ShellOpenFileByDevicePath (
-             &FileDevicePath,
+  // MU_CHANGE: Use file name and path instead of device path
+  Status = ShellOpenFileByName (
+             FileName,
              &FileHandle,
              EFI_FILE_MODE_READ,
              0
@@ -407,8 +421,9 @@ Exit:
   //
   // Free allocated buffers
   //
-  if (FileDevicePath != NULL) {
-    FreePool (FileDevicePath);
+  // MU_CHANGE: Use file name and path instead of device path
+  if (FileName != NULL) {
+    FreePool (FileName);
   }
 
   if (IsFileOpened) {
