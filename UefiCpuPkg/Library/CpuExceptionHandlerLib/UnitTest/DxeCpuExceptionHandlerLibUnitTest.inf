@@ -48,7 +48,7 @@
   gEfiHobMemoryAllocStackGuid
 
 [Pcd]
-  gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard       ## CONSUMES
+  gEfiMdeModulePkgTokenSpaceGuid.PcdCpuSmmStackGuard       ## CONSUMES
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApStackSize           ## CONSUMES
 
 [Protocols]

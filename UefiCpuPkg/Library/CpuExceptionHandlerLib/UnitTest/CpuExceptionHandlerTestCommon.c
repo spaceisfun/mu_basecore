@@ -743,7 +743,7 @@ TestCpuStackGuardInBspAndAp (
   VOID                            *NewIdtr;
   UINTN                           *CpuStackBaseBuffer;
 
-  if (!PcdGetBool (PcdCpuStackGuard)) {
+  if (!PcdGetBool (PcdCpuSmmStackGuard)) {
     return UNIT_TEST_PASSED;
   }
 
