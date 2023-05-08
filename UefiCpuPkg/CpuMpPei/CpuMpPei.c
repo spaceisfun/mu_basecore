@@ -599,6 +599,7 @@ InitializeMpExceptionStackSwitchHandlers (
       ASSERT (SwitchStackData[Index].Status == EFI_SUCCESS);
     }
   }
+
   FreePages (SwitchStackData, EFI_SIZE_TO_PAGES (NumberOfProcessors * sizeof (EXCEPTION_STACK_SWITCH_CONTEXT)));
 }
 
