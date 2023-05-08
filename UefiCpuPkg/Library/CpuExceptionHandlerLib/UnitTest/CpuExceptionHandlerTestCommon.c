@@ -747,6 +747,7 @@ TestCpuStackGuardInBspAndAp (
   if (!PcdGetBool (PcdCpuSmmStackGuard)) {
     return UNIT_TEST_PASSED;
   }
+
   // MU_CHANGE End
 
   //
