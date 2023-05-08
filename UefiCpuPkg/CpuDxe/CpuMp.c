@@ -708,6 +708,7 @@ InitializeMpExceptionStackSwitchHandlers (
       ASSERT (SwitchStackData[Index].Status == EFI_SUCCESS);
     }
   }
+
   FreePool (SwitchStackData);
 }
 
