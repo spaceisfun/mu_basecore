@@ -497,10 +497,14 @@ PeCoffLoaderGetPeHeader (
     NumberOfSections    = (UINTN)(Hdr.Pe32->FileHeader.NumberOfSections);
   }
 
+  DEBUG((DEBUG_INFO, "ImageContext->Handle %p NumberOfSections %u\n", ImageContext->Handle, NumberOfSections));
+
   for (Index = 0; Index < NumberOfSections; Index++) {
     //
     // Read section header from file
     //
+    DEBUG((DEBUG_INFO, "Reading section header %u of %u. Offset=%u\n", Index, NumberOfSections, SectionHeaderOffset));
+
     Size     = sizeof (EFI_IMAGE_SECTION_HEADER);
     ReadSize = Size;
     Status   = ImageContext->ImageRead (
@@ -737,6 +741,8 @@ PeCoffLoaderGetImageInfo (
                             Hdr.Pe32->FileHeader.SizeOfOptionalHeader;
 
       for (Index = 0; Index < Hdr.Pe32->FileHeader.NumberOfSections; Index++) {
+          DEBUG((DEBUG_INFO, "GetImageInfo Handle %p  - Section %u\n", ImageContext->Handle, Index));
+
         //
         // Read section header from file
         //
@@ -769,6 +775,7 @@ PeCoffLoaderGetImageInfo (
 
       if (DebugDirectoryEntryFileOffset != 0) {
         for (Index = 0; Index < DebugDirectoryEntry->Size; Index += sizeof (EFI_IMAGE_DEBUG_DIRECTORY_ENTRY)) {
+          DEBUG((DEBUG_INFO, "GetImageInfo Handle %p  - Section %u Debug\n", ImageContext->Handle, Index));
           //
           // Read next debug directory entry
           //
@@ -813,6 +820,7 @@ PeCoffLoaderGetImageInfo (
     DebugDirectoryEntryFileOffset = 0;
 
     for (Index = 0; Index < Hdr.Te->NumberOfSections;) {
+      DEBUG((DEBUG_INFO, "GetImageInfo Handle %p  - Section %u\n", ImageContext->Handle, Index));
       //
       // Read section header from file
       //
@@ -871,6 +879,7 @@ PeCoffLoaderGetImageInfo (
 
     if (DebugDirectoryEntryFileOffset != 0) {
       for (Index = 0; Index < DebugDirectoryEntry->Size; Index += sizeof (EFI_IMAGE_DEBUG_DIRECTORY_ENTRY)) {
+        DEBUG((DEBUG_INFO, "GetImageInfo Handle %p  - Section %u DEBUG\n", ImageContext->Handle, Index));
         //
         // Read next debug directory entry
         //
@@ -1396,7 +1405,7 @@ PeCoffLoaderLoadImage (
   CHAR16                               *String;
   UINT32                               Offset;
   UINT32                               TeStrippedOffset;
-
+  UINT32                                cnt = 0;
   ASSERT (ImageContext != NULL);
 
   //
@@ -1410,6 +1419,7 @@ PeCoffLoaderLoadImage (
   // is legit.
   //
   CopyMem (&CheckContext, ImageContext, sizeof (PE_COFF_LOADER_IMAGE_CONTEXT));
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
 
   Status = PeCoffLoaderGetImageInfo (&CheckContext);
   if (RETURN_ERROR (Status)) {
@@ -1432,6 +1442,7 @@ PeCoffLoaderLoadImage (
     return RETURN_INVALID_PARAMETER;
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // If there's no relocations, then make sure it's not a runtime driver,
   // and that it's being loaded at the linked address.
@@ -1456,6 +1467,7 @@ PeCoffLoaderLoadImage (
     }
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // Make sure the allocated space has the proper section alignment
   //
@@ -1505,6 +1517,9 @@ PeCoffLoaderLoadImage (
     TeStrippedOffset = (UINT32)Hdr.Te->StrippedSize - sizeof (EFI_TE_IMAGE_HEADER);
   }
 
+  
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
+
   if (RETURN_ERROR (Status)) {
     ImageContext->ImageError = IMAGE_ERROR_IMAGE_READ;
     return RETURN_LOAD_ERROR;
@@ -1514,7 +1529,12 @@ PeCoffLoaderLoadImage (
   // Load each section of the image
   //
   Section = FirstSection;
+
+
   for (Index = 0; Index < NumberOfSections; Index++) {
+
+      DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u - SECTION %u\n", ImageContext->Handle, cnt++, Index));
+
     //
     // Read the section
     //
@@ -1539,6 +1559,7 @@ PeCoffLoaderLoadImage (
 
     // MU_CHANGE - CodeQL change
     if ((Section->SizeOfRawData > 0) && (Base != NULL)) {
+      DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u - SECTION %u ImageRead handle %u, offset %u, size ptr %p (%u), base %p, end %p\n", ImageContext->Handle, cnt++, Index, ImageContext->Handle, Section->PointerToRawData - TeStrippedOffset, &Size, Size, Base, End));
       Status = ImageContext->ImageRead (
                                ImageContext->Handle,
                                Section->PointerToRawData - TeStrippedOffset,
@@ -1565,6 +1586,7 @@ PeCoffLoaderLoadImage (
     Section += 1;
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // Get image's entry point
   //
@@ -1599,6 +1621,7 @@ PeCoffLoaderLoadImage (
                                                           );
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // Determine the size of the fixup data
   //
@@ -1634,6 +1657,7 @@ PeCoffLoaderLoadImage (
     ImageContext->FixupDataSize = DirectoryEntry->Size / sizeof (UINT16) * sizeof (UINT64);
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // Consumer must allocate a buffer for the relocation fixup log.
   // Only used for runtime drivers.
@@ -1727,6 +1751,7 @@ PeCoffLoaderLoadImage (
     }
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u\n", ImageContext->Handle, cnt++));
   //
   // Get Image's HII resource section
   //
@@ -1842,6 +1867,7 @@ PeCoffLoaderLoadImage (
     }
   }
 
+  DEBUG((DEBUG_INFO, "LoadImg Handle %p  - %u DONE\n", ImageContext->Handle, cnt++));
   return Status;
 }
 
@@ -2130,6 +2156,8 @@ PeCoffLoaderImageReadFromMemory (
   ASSERT (ReadSize != NULL);
   ASSERT (FileHandle != NULL);
   ASSERT (Buffer != NULL);
+
+  DEBUG((DEBUG_INFO, "PeCoffLoaderImageReadFromMemory %p  %p %u (ptr=%p)\n", Buffer, ((UINT8 *)FileHandle) + FileOffset, *ReadSize, ReadSize));
 
   CopyMem (Buffer, ((UINT8 *)FileHandle) + FileOffset, *ReadSize);
   return RETURN_SUCCESS;
