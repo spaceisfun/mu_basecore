@@ -8,6 +8,7 @@
 **/
 
 #include "StandaloneMmCore.h"
+#include <Library/ArmLib.h>
 
 EFI_STATUS
 MmCoreFfsFindMmDriver (
@@ -528,6 +529,14 @@ StandaloneMmMain (
   EFI_MMRAM_DESCRIPTOR            *MmramRanges;
   UINTN                           MmramRangeCount;
   EFI_HOB_FIRMWARE_VOLUME         *BfvHob;
+  
+  ArmDisableMmu ();
+  ArmCleanInvalidateDataCache ();
+    ArmDisableAlignmentCheck ();
+    ArmEnableStackAlignmentCheck ();
+    ArmEnableInstructionCache ();
+    ArmEnableDataCache ();
+ArmEnableMmu();
 
   ProcessLibraryConstructorList (HobStart, &gMmCoreMmst);
 

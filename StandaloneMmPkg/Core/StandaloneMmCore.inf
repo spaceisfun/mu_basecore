@@ -38,6 +38,8 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   StandaloneMmPkg/StandaloneMmPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
 
 [LibraryClasses]
   BaseLib
@@ -52,6 +54,7 @@
   PeCoffLib
   ReportStatusCodeLib
   StandaloneMmCoreEntryPoint
+  ArmLib
 
 [Protocols]
   gEfiDxeMmReadyToLockProtocolGuid             ## UNDEFINED # SmiHandlerRegister
