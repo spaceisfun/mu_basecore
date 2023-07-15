@@ -343,9 +343,9 @@ MmLoadImage (
   ImageContext.ImageAddress += ImageContext.SectionAlignment - 1;
   ImageContext.ImageAddress &= ~((EFI_PHYSICAL_ADDRESS)(ImageContext.SectionAlignment - 1));
   
-  Status  = ArmClearMemoryRegionReadOnly ((EFI_PHYSICAL_ADDRESS)DstBuffer, EFI_PAGES_TO_SIZE(PageCount));
-  ASSERT_EFI_ERROR (Status);
-  DEBUG((DEBUG_INFO, "ArmClearMemoryRegionReadOnly %lx\n",Status));
+  // Status  = ArmClearMemoryRegionReadOnly ((EFI_PHYSICAL_ADDRESS)DstBuffer, EFI_PAGES_TO_SIZE(PageCount));
+  // ASSERT_EFI_ERROR (Status);
+  // DEBUG((DEBUG_INFO, "ArmClearMemoryRegionReadOnly %lx\n",Status));
 
   //
   // Load the image to our new buffer
