@@ -301,6 +301,7 @@ MmLoadImage (
 {
   UINTN                         PageCount;
   EFI_STATUS                    Status;
+  EFI_STATUS                    StatusTmp;
   EFI_PHYSICAL_ADDRESS          DstBuffer;
   PE_COFF_LOADER_IMAGE_CONTEXT  ImageContext;
 
@@ -342,10 +343,18 @@ MmLoadImage (
   //
   ImageContext.ImageAddress += ImageContext.SectionAlignment - 1;
   ImageContext.ImageAddress &= ~((EFI_PHYSICAL_ADDRESS)(ImageContext.SectionAlignment - 1));
-  
-  Status  = ArmClearMemoryRegionReadOnly ((EFI_PHYSICAL_ADDRESS)DstBuffer, EFI_PAGES_TO_SIZE(PageCount));
+  UINT32 MemoryAttributes;
+
+  for (EFI_PHYSICAL_ADDRESS adr = (EFI_PHYSICAL_ADDRESS)DstBuffer; adr < (EFI_PHYSICAL_ADDRESS)DstBuffer + EFI_PAGES_TO_SIZE(PageCount); adr+= 0x1000)
+  {
+  StatusTmp  = GetMemoryPermissions (adr, &MemoryAttributes)
+  ;
+  DEBUG((DEBUG_INFO, "GetMemoryPermissions addr=%p, attr=%u %lx\n",adr,MemoryAttributes, StatusTmp));
+
+  }
+  //Status  = ArmClearMemoryRegionReadOnly ((EFI_PHYSICAL_ADDRESS)DstBuffer, EFI_PAGES_TO_SIZE(PageCount));
   ASSERT_EFI_ERROR (Status);
-  DEBUG((DEBUG_INFO, "ArmClearMemoryRegionReadOnly addr=%p, sz=%llu %lx\n",DstBuffer,EFI_PAGES_TO_SIZE(PageCount), Status));
+  DEBUG((DEBUG_INFO, "SKIPPING ArmClearMemoryRegionReadOnly addr=%p, sz=%llu %lx\n",DstBuffer,EFI_PAGES_TO_SIZE(PageCount), Status));
 
   //
   // Load the image to our new buffer
